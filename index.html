@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Confirme presença — Aniversário</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Work+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --midnight:#1A1633;
+    --midnight-deep:#120F26;
+    --gold:#E8B655;
+    --gold-soft:#F3D9A4;
+    --blush:#F2A9A0;
+    --cream:#F7F3EA;
+    --green:#6FA287;
+    --red:#D96C6C;
+    --card-w: 460px;
+  }
+
+  *{ box-sizing:border-box; }
+
+  html,body{
+    margin:0;
+    padding:0;
+    min-height:100%;
+    background: var(--midnight);
+    background-image:
+      radial-gradient(circle at 15% 20%, rgba(232,182,85,0.10), transparent 40%),
+      radial-gradient(circle at 85% 80%, rgba(242,169,160,0.10), transparent 40%);
+    color: var(--cream);
+    font-family:'Work Sans', sans-serif;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 32px 16px;
+  }
+
+  .wrap{
+    width:100%;
+    max-width: var(--card-w);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+
+  /* Confetti signature element */
+  .confetti{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    overflow:hidden;
+    z-index:0;
+  }
+  .confetti span{
+    position:absolute;
+    top:-10px;
+    width:8px;
+    height:14px;
+    opacity:0.55;
+    border-radius:1px;
+    animation: fall linear infinite;
+  }
+  @keyframes fall{
+    to{ transform: translateY(110vh) rotate(360deg); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .confetti{ display:none; }
+  }
+
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    color: var(--gold-soft);
+    margin-bottom: 14px;
+    z-index:1;
+  }
+
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:700;
+    font-size: clamp(34px, 7vw, 52px);
+    line-height:1.05;
+    text-align:center;
+    margin: 0 0 6px 0;
+    z-index:1;
+  }
+
+  .subtitle{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-weight:500;
+    font-size:17px;
+    color: var(--blush);
+    text-align:center;
+    margin: 0 0 30px 0;
+    z-index:1;
+  }
+
+  .card{
+    position:relative;
+    width:100%;
+    background: var(--midnight-deep);
+    border:1px solid rgba(232,182,85,0.25);
+    border-radius: 18px;
+    padding: 34px 30px 28px;
+    box-shadow: 0 30px 60px -20px rgba(0,0,0,0.6);
+    z-index:1;
+  }
+
+  .card::before{
+    content:"";
+    position:absolute;
+    top:0; left:0; right:0;
+    height:4px;
+    border-radius: 18px 18px 0 0;
+    background: linear-gradient(90deg, var(--gold), var(--blush), var(--gold));
+  }
+
+  label{
+    display:block;
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color: var(--gold-soft);
+    margin-bottom:8px;
+  }
+
+  input[type="text"]{
+    width:100%;
+    padding:14px 16px;
+    background: rgba(247,243,234,0.04);
+    border:1px solid rgba(247,243,234,0.18);
+    border-radius:10px;
+    color: var(--cream);
+    font-family:'Work Sans', sans-serif;
+    font-size:15px;
+    outline:none;
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+  input[type="text"]:focus{
+    border-color: var(--gold);
+    background: rgba(247,243,234,0.07);
+  }
+  input[type="text"]::placeholder{ color: rgba(247,243,234,0.35); }
+
+  .field{ margin-bottom:20px; }
+
+  .btn{
+    width:100%;
+    padding:15px 18px;
+    border:none;
+    border-radius:10px;
+    background: var(--gold);
+    color: var(--midnight-deep);
+    font-family:'Work Sans', sans-serif;
+    font-weight:600;
+    font-size:15px;
+    cursor:pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+  }
+  .btn:hover{ transform: translateY(-1px); box-shadow: 0 10px 24px -8px rgba(232,182,85,0.5); }
+  .btn:active{ transform: translateY(0); }
+  .btn:disabled{ opacity:0.55; cursor:not-allowed; transform:none; box-shadow:none; }
+
+  .msg{
+    margin-top:16px;
+    font-size:14px;
+    text-align:center;
+    min-height:20px;
+    font-family:'Work Sans', sans-serif;
+  }
+  .msg.ok{ color: var(--green); }
+  .msg.err{ color: var(--red); }
+
+  .seal{
+    display:none;
+    text-align:center;
+    padding: 10px 0 4px;
+  }
+  .seal.show{ display:block; }
+  .seal .stamp{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:18px;
+    color: var(--green);
+    border:1.5px solid var(--green);
+    border-radius: 999px;
+    padding: 8px 20px;
+  }
+
+  .tally{
+    z-index:1;
+    margin-top: 26px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.05em;
+    color: rgba(247,243,234,0.55);
+    text-align:center;
+  }
+  .tally strong{
+    color: var(--gold-soft);
+  }
+</style>
+</head>
+<body>
+
+<div class="confetti" id="confetti"></div>
+
+<div class="wrap">
+  <div class="eyebrow">Você está convidado(a)</div>
+  <h1>Ao meu Aniversário<br>🎉</h1>
+  <p class="subtitle">Confirme sua presença abaixo</p>
+
+  <div class="card">
+    <form id="rsvpForm">
+      <div class="field">
+        <label for="nome">Nome completo</label>
+        <input type="text" id="nome" name="nome" placeholder="Digite seu nome completo" autocomplete="name" required>
+      </div>
+      <button type="submit" class="btn" id="btnConfirmar">Confirmar presença</button>
+      <div class="msg" id="msg"></div>
+    </form>
+
+    <div class="seal" id="seal">
+      <div class="stamp">✓ Presença confirmada</div>
+    </div>
+  </div>
+
+  <div class="tally" id="tally">carregando confirmações…</div>
+</div>
+
+<script>
+  // ====== CONFIGURAÇÃO DO SUPABASE ======
+  // Substitua pelos dados do SEU projeto Supabase (veja instruções enviadas junto com o arquivo)
+  const SUPABASE_URL = "COLE_AQUI_SUA_SUPABASE_URL";
+  const SUPABASE_ANON_KEY = "COLE_AQUI_SUA_ANON_KEY";
+  // ========================================
+
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const form = document.getElementById('rsvpForm');
+  const msg = document.getElementById('msg');
+  const btn = document.getElementById('btnConfirmar');
+  const seal = document.getElementById('seal');
+  const tally = document.getElementById('tally');
+
+  async function atualizarContagem(){
+    try{
+      const { count, error } = await supabase
+        .from('confirmacoes')
+        .select('*', { count: 'exact', head: true });
+      if (error) throw error;
+      tally.innerHTML = `<strong>${count ?? 0}</strong> pessoa${count === 1 ? '' : 's'} já confirmaram presença`;
+    }catch(e){
+      tally.textContent = '';
+    }
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const nome = document.getElementById('nome').value.trim();
+
+    if (!nome){
+      msg.textContent = 'Por favor, digite seu nome completo.';
+      msg.className = 'msg err';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Enviando...';
+    msg.textContent = '';
+    msg.className = 'msg';
+
+    try{
+      const { error } = await supabase
+        .from('confirmacoes')
+        .insert([{ nome_completo: nome }]);
+
+      if (error) throw error;
+
+      form.classList.add('hidden');
+      form.style.display = 'none';
+      seal.classList.add('show');
+      atualizarContagem();
+    }catch(err){
+      msg.textContent = 'Não foi possível confirmar agora. Tente novamente em instantes.';
+      msg.className = 'msg err';
+      btn.disabled = false;
+      btn.textContent = 'Confirmar presença';
+    }
+  });
+
+  atualizarContagem();
+
+  // Confetes decorativos
+  (function(){
+    const holder = document.getElementById('confetti');
+    const colors = ['#E8B655', '#F2A9A0', '#6FA287', '#F7F3EA'];
+    const total = 26;
+    for(let i=0; i<total; i++){
+      const s = document.createElement('span');
+      s.style.left = Math.random()*100 + 'vw';
+      s.style.background = colors[i % colors.length];
+      s.style.animationDuration = (6 + Math.random()*6) + 's';
+      s.style.animationDelay = (Math.random()*8) + 's';
+      s.style.transform = `rotate(${Math.random()*360}deg)`;
+      holder.appendChild(s);
+    }
+  })();
+</script>
+
+</body>
+</html>
